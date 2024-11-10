@@ -14,9 +14,13 @@ public class Main {
         tree.addNode(6);
         tree.addNode(20);
         tree.addNode(50);
+        tree.addNode(15);
+        tree.addNode(70);
+        tree.addNode(88);
 
         tree.printTree();
-        System.out.println(tree.getAllFolha());
+        tree.deleteSubTree(6);
+        tree.printTree();
         //System.out.println(tree.findNode(20).valor);
 
 

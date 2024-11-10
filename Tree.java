@@ -21,18 +21,23 @@ public class Tree {
         Node novoNode = new Node(valor);
 
         if (no == null) {
+            novoNode.pai = null;
             return this.raiz = novoNode;
         } else if (esqOuDir) {
             if(no.dir == null){
+                novoNode.pai = no;
                 return no.dir = novoNode;
             }else{
+                novoNode.pai = no;
                 return no.esq = novoNode;
             }
 
         } else {
             if(no.esq == null) {
+                novoNode.pai = no;
                 return no.esq = novoNode;
             }else{
+                novoNode.pai = no;
                 return no.dir = novoNode;
             }
         }
@@ -92,8 +97,79 @@ public class Tree {
 
         Node nodeRemovido = this.findNode(valor);
 
+
+        if(nodeRemovido == null){
+            System.out.println("Não foi localizado nenhum node");
+            return null;
+        }
+
+        Node nodePai = nodeRemovido.pai;
+        if(nodePai == null){
+            System.out.println("A arvore so tem um Node");
+            return nodeRemovido;
+        }
+
+        if(nodeRemovido.dir == null && nodeRemovido.esq == null){
+            if(nodePai == null){
+                this.raiz = null;
+            }
+            else if(nodePai.esq == nodeRemovido){
+                nodePai.esq = null;
+            }else {
+                nodePai.dir = null;
+            }
+        }
+
+        else if(nodeRemovido.esq == null || nodeRemovido.dir == null){
+            // esse teste  vai retornar o filho do Nó a ser removido que logo vai se ligar ao Pai do node removido
+            Node nodeFilho = (nodeRemovido.esq != null) ? nodeRemovido.esq : nodeRemovido.dir;
+
+            if(nodePai == null){
+                this.raiz = nodeFilho;
+            }
+            else if(nodePai.dir == nodeRemovido){
+                nodePai.dir = nodeFilho;
+            } else {
+                nodePai.esq = nodeFilho;
+            }
+            nodeFilho.pai = nodePai;
+        }
+
+        else{
+            Node sucessor = nodeRemovido.dir;
+            while (sucessor.esq != null) {
+                sucessor = sucessor.esq;
+            }
+
+            int valorSucessor = sucessor.valor; // Armazena o valor do sucessor
+            removeNode(sucessor.valor); // Remove o sucessor (caso simples de remoção)
+            nodeRemovido.valor = valorSucessor; // Substitui o valor do nó removido pelo do sucessor
+
+        }
+
         return nodeRemovido;
 
+    }
+
+
+    public Node deleteSubTree(int valor){
+        Node findNode = findNode(valor);
+        if(findNode == null){
+            return null;
+        }
+        return this.deleteSub(findNode);
+    }
+
+    private Node deleteSub(Node node){
+
+        if(node.dir != null && node.esq != null){
+            node.esq = null;
+            node.dir = null;
+        } else  if(node.dir != null || node.esq != null){
+            node.esq = null;
+            node.dir = null;
+        }
+        return node;
     }
 
     public Node findNode(int valor){
@@ -167,6 +243,19 @@ public class Tree {
         }
     }
 
+    public void concatenaArvore(Tree tree){
+        this.contatenaArvore(tree,this.localizaNoIncompletoRecursivo(this.getRaiz()));
+    }
+
+    private void contatenaArvore(Tree tree, Node nodeParaConcatenar){
+        if(nodeParaConcatenar.dir == null){
+            nodeParaConcatenar.dir = tree.getRaiz();
+        }else {
+            nodeParaConcatenar.esq = tree.getRaiz();
+        }
+    }
+
+
     private boolean getRandom() {
         Random random = new Random();
         return random.nextBoolean();
@@ -174,24 +263,24 @@ public class Tree {
 
 
     public void printTree() {
-        printTree(this.getRaiz(), 0);
+        printTree(this.getRaiz(), "", false);
     }
 
     //** Metodo feito pelo CHATGPT para que eu pudesse ir testando de forma ilustrativa como ficava a arvore **
-    private void printTree(Node node, int depth) {
-        if (node == null) {
-            return;
+    private void printTree(Node node, String prefix, boolean isRight) {
+        if (node != null) {
+            // Mostra o prefixo e seta se é filho direito ou esquerdo
+            System.out.println(prefix + (isRight ? "├── " : "└── ") + node.valor);
+
+            // Constrói novo prefixo para os filhos do nó atual
+            String childPrefix = prefix + (isRight ? "│   " : "    ");
+
+            // Imprime primeiro o lado direito e depois o esquerdo para a visualização ficar invertida (direita no topo)
+            printTree(node.dir, childPrefix, true);
+            printTree(node.esq, childPrefix, false);
         }
-
-        // Primeiro, imprime o lado direito (aumentando a profundidade)
-        printTree(node.dir, depth + 1);
-
-        // Imprime o nó atual com indentação baseada na profundidade
-        System.out.println(" ".repeat(depth * 4) + "└── " + node.valor);
-
-        // Depois, imprime o lado esquerdo
-        printTree(node.esq, depth + 1);
     }
+
 
 
 }
